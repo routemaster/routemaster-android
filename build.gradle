@@ -1,0 +1,31 @@
+apply plugin: "com.android.application"
+
+defaultTasks "build"
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    
+    dependencies {
+        classpath "com.android.tools.build:gradle:0.12.2"
+    }
+}
+
+// creates gradlew and associated files
+task wrapper(type: Wrapper) {
+    gradleVersion = "1.10"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: "com.google.guava", name: "guava", version: "17.0"
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "20.0.0"
+}
