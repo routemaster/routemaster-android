@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
         actionBar.addTab(recordTab);
         actionBar.addTab(historyTab);
         actionBar.addTab(friendsTab);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.map);
 
         // Something to test our dependencies
         ImmutableList.of(1, 2, 3);

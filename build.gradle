@@ -22,7 +22,8 @@ repositories {
 }
 
 dependencies {
-    compile group: "com.google.guava", name: "guava", version: "17.0"
+    compile "com.google.guava:guava:17.0"
+    compile "com.google.android.gms:play-services:4.4.+"
 }
 
 android {
