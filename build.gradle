@@ -28,4 +28,10 @@ dependencies {
 android {
     compileSdkVersion 19
     buildToolsVersion "20.0.0"
+
+    sourceSets {
+        main.setRoot('.')
+        main.java.srcDirs = ['src']
+        androidTest.setRoot('tests')
+    }
 }
