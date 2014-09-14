@@ -26,8 +26,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main);
         if(state == null) {
             Log.i(TAG, "Welcome to RouteMaster!");
-            Fragment recordFragment = new RecordFragment(),
-                     historyFragment = new HistoryFragment();
+            Fragment recordFragment = new RecordFragment();
+            Fragment historyFragment = new HistoryFragment();
             fm.beginTransaction()
                 .add(R.id.main, recordFragment, TAG_RECORD_FRAGMENT)
                 .add(R.id.main, historyFragment, TAG_HISTORY_FRAGMENT)
