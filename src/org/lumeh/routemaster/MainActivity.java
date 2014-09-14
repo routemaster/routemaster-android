@@ -91,8 +91,5 @@ public class MainActivity extends Activity {
         FragmentManager fm = getFragmentManager();
         int tabId = getActionBar().getSelectedNavigationIndex();
         state.putInt(STATE_SELECTED_TAB_ID, tabId);
-
-        /*fm.putFragment(state, STATE_RECORD_FRAGMENT, recordFragment);
-        fm.putFragment(state, STATE_HISTORY_FRAGMENT, historyFragment);*/
     }
 }
