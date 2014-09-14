@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">RouteMaster</string>
-    <string name="hello_world">Hello, world!</string>
+  <string name="app_name">RouteMaster</string>
+  <string name="history_placeholder">This is the history tab</string>
 </resources>
