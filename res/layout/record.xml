@@ -1,0 +1,8 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/record">
+  <!-- A MapFragment is added dynamically. This can't be done statically,
+       because static nested fragments aren't supported. -->
+</RelativeLayout>
