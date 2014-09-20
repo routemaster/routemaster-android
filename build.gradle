@@ -4,21 +4,21 @@ defaultTasks "build"
 
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     
     dependencies {
-        classpath "com.android.tools.build:gradle:0.12.2"
+        classpath "com.android.tools.build:gradle:0.13.0"
     }
 }
 
 // creates gradlew and associated files
 task wrapper(type: Wrapper) {
-    gradleVersion = "1.10"
+    gradleVersion = "2.1"
 }
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
