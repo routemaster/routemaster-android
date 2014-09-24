@@ -6,7 +6,7 @@ buildscript {
     repositories {
         jcenter()
     }
-    
+
     dependencies {
         classpath "com.android.tools.build:gradle:0.13.0"
     }
@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     compile "com.google.guava:guava:17.0"
-    compile "com.google.android.gms:play-services:4.4.+"
+    compile "com.google.android.gms:play-services:5.0.+"
 }
 
 android {
@@ -34,5 +34,10 @@ android {
         main.setRoot('.')
         main.java.srcDirs = ['src']
         androidTest.setRoot('tests')
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
