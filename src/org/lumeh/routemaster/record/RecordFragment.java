@@ -14,6 +14,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import org.lumeh.routemaster.R;
+import org.lumeh.routemaster.models.TrackingConfig;
 
 public class RecordFragment extends Fragment implements LocationListener {
     private static final String TAG = "RouteMaster";
@@ -22,28 +23,9 @@ public class RecordFragment extends Fragment implements LocationListener {
     private static final String TAG_ROUTE_LOCATIONS = "routeLocations";
     private static final String TAG_ROUTE_POINTS = "routePoints";
 
-    private static final LocationRequest LOCATION_REQUEST =
-        LocationRequest.create()
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setSmallestDisplacement(10.0f) // meters, saves power
-            .setInterval(1000); // ms, actual interval may differ
-
-    /**
-     * If a location has a worse accuracy than this value, it's completely
-     * discarded, because it's of no use to us. This is useful when the app is
-     * first starting, so it doesn't use a bad value before the gps/wifi is
-     * ready.
-     */
-    private static final float MIN_ACCURACY = 20.0f; // meters
-
-    /**
-     * If the distance between the current and last locations are larger than
-     * this our recording is bad, and should be discarded. (TODO)
-     * <p>
-     * Santity check: 60 miles per hour is about 26.82 meters per second
-     */
-    private static final float MAX_DISTANCE = 40.0f; // meters
-
+    private TrackingConfig trackingConfig;
+    private final LocationRequest locationRequest = LocationRequest.create()
+        .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     private GoogleApiClient googleApiClient;
     private TrackingMapFragment mapFragment;
     private LocationGoogleApiClientCallbacks locationCallbacks;
@@ -104,11 +86,27 @@ public class RecordFragment extends Fragment implements LocationListener {
 
     public void onStart() {
         super.onStart();
-        // Asynchronously request location updates upon connecting to Google
+
+        // get the TrackingConfig (TODO: should pull from server)
+        if(trackingConfig == null) {
+            trackingConfig = new TrackingConfig(1000,   // pollingIntervalMs
+                                                10.0f,  // geofencingDistanceM
+                                                20.0f,  // minAccuracyM
+                                                40.0f); // maxDistanceM
+
+            // update locationRequest
+            locationRequest
+                .setInterval(trackingConfig.getPollingIntervalMs())
+                .setSmallestDisplacement(
+                    trackingConfig.getGeofencingDistanceM()
+                );
+        }
+
+        // asynchronously request location updates upon connecting to Google
         // Play Services
         if(locationCallbacks == null) {
             locationCallbacks = new LocationGoogleApiClientCallbacks(
-                googleApiClient, LOCATION_REQUEST, this
+                googleApiClient, locationRequest, this
             );
             googleApiClient.registerConnectionCallbacks(locationCallbacks);
             googleApiClient.registerConnectionFailedListener(locationCallbacks);
@@ -131,14 +129,14 @@ public class RecordFragment extends Fragment implements LocationListener {
         //
         // Another person with the same problem:
         // http://stackoverflow.com/q/22365188/130598
-        if(loc.getAccuracy() > MIN_ACCURACY) {
+        if(loc.getAccuracy() > trackingConfig.getMinAccuracyM()) {
             Log.d(TAG, "ignoring inaccurate location");
             return;
         }
 
         if(routeLocations.size() > 0) {
             Location prevLoc = routeLocations.get(routeLocations.size() - 1);
-            if(prevLoc.distanceTo(loc) > MAX_DISTANCE) {
+            if(prevLoc.distanceTo(loc) > trackingConfig.getMaxDistanceM()) {
                 // TODO: actually discard
                 Log.w(TAG, "route has a large jump, should be discarded");
             }
