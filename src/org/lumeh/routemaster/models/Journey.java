@@ -8,6 +8,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import static org.lumeh.routemaster.util.Dates.toIsoString;
 
 /**
  * A particular instance of walking from one Place to another.
@@ -80,5 +85,31 @@ public class Journey implements Parcelable {
         dest.writeDouble(this.distanceM);
         dest.writeInt(this.efficiency);
         dest.writeTypedList(this.waypoints);
+    }
+
+    public JsonObject toJson() {
+        JsonArrayBuilder waypointBuilder = Json.createArrayBuilder();
+        for (Location loc : this.waypoints) {
+            waypointBuilder.add(Json.createObjectBuilder()
+                    .add("time", toIsoString(loc.getTime()))
+                    .add("accuracyM", loc.getAccuracy())
+                    .add("latitude", loc.getLatitude())
+                    .add("longitude", loc.getLongitude())
+                    .add("heightM", loc.getAltitude())
+                    .build());
+        }
+        JsonObjectBuilder b = Json.createObjectBuilder();
+        b.add("visibility", this.visibility.toString());
+        b.add("waypoints", waypointBuilder.build());
+        if (this.id.isPresent()) {
+            b.add("id", this.id.get());
+        }
+        if (this.startTimeUtc.isPresent()) {
+            b.add("startTimeUtc", toIsoString(this.startTimeUtc.get()));
+        }
+        if (this.endTimeUtc.isPresent()) {
+            b.add("endTimeUtc", toIsoString(this.endTimeUtc.get()));
+        }
+        return b.build();
     }
 }
