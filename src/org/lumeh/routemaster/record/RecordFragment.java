@@ -12,16 +12,19 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import org.lumeh.routemaster.R;
+import org.lumeh.routemaster.models.Account;
+import org.lumeh.routemaster.models.Journey;
 import org.lumeh.routemaster.models.TrackingConfig;
 
 public class RecordFragment extends Fragment implements LocationListener {
     private static final String TAG = "RouteMaster";
 
     private static final String TAG_MAP_FRAGMENT = "mapFragment";
-    private static final String TAG_ROUTE_LOCATIONS = "routeLocations";
-    private static final String TAG_ROUTE_POINTS = "routePoints";
+    private static final String TAG_JOURNEY = "journey";
+    private static final String TAG_JOURNEY_LATLNGS = "journeyLatLngs";
 
     private TrackingConfig trackingConfig;
     private final LocationRequest locationRequest = LocationRequest.create()
@@ -30,17 +33,13 @@ public class RecordFragment extends Fragment implements LocationListener {
     private TrackingMapFragment mapFragment;
     private LocationGoogleApiClientCallbacks locationCallbacks;
 
-    /**
-     * Store the raw Location objects received from onLocationChanged, allowing
-     * further processing later.
-     */
-    private ArrayList<Location> routeLocations = new ArrayList<>();
+    private Journey journey = new Journey(new Account());
 
     /**
      * Store visited locations as LatLng, the data format Polyline requires,
-     * avoiding converting the routeLocations structure on every update.
+     * avoiding converting the Locations on every update.
      */
-    private ArrayList<LatLng> routePoints = new ArrayList<>();
+    private ArrayList<LatLng> journeyLatLngs = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -78,9 +77,9 @@ public class RecordFragment extends Fragment implements LocationListener {
 
         // restore from state
         if(state != null) {
-            routeLocations = state.getParcelableArrayList(TAG_ROUTE_LOCATIONS);
-            routePoints = state.getParcelableArrayList(TAG_ROUTE_POINTS);
-            getMapFragment().setRoutePoints(routePoints);
+            journey = state.getParcelable(TAG_JOURNEY);
+            journeyLatLngs = state.getParcelableArrayList(TAG_JOURNEY_LATLNGS);
+            getMapFragment().setRoutePoints(journeyLatLngs);
         }
     }
 
@@ -134,23 +133,24 @@ public class RecordFragment extends Fragment implements LocationListener {
             return;
         }
 
-        if(routeLocations.size() > 0) {
-            Location prevLoc = routeLocations.get(routeLocations.size() - 1);
+        ImmutableList<Location> waypoints = journey.getWaypoints();
+        if(waypoints.size() > 0) {
+            Location prevLoc = waypoints.get(waypoints.size() - 1);
             if(prevLoc.distanceTo(loc) > trackingConfig.getMaxDistanceM()) {
                 // TODO: actually discard
                 Log.w(TAG, "route has a large jump, should be discarded");
             }
         }
 
-        routeLocations.add(loc);
-        routePoints.add(new LatLng(loc.getLatitude(), loc.getLongitude()));
-        getMapFragment().setRoutePoints(routePoints);
+        journey.addWaypoint(loc);
+        journeyLatLngs.add(new LatLng(loc.getLatitude(), loc.getLongitude()));
+        getMapFragment().setRoutePoints(journeyLatLngs);
     }
 
     @Override
     public void onSaveInstanceState(Bundle state) {
-        state.putParcelableArrayList(TAG_ROUTE_LOCATIONS, routeLocations);
-        state.putParcelableArrayList(TAG_ROUTE_POINTS, routePoints);
+        state.putParcelable(TAG_JOURNEY, journey);
+        state.putParcelableArrayList(TAG_JOURNEY_LATLNGS, journeyLatLngs);
     }
 
     /**
