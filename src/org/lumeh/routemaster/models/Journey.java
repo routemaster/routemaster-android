@@ -17,7 +17,9 @@ import static org.lumeh.routemaster.util.Dates.toIsoString;
 /**
  * A particular instance of walking from one Place to another.
  */
-public class Journey implements Parcelable {
+public class Journey implements Parcelable, Uploadable {
+    private static final String UPLOAD_PATH = "/journey";
+
     private Optional<Integer> id = Optional.absent();
     private Visibility visibility;
     private Optional<Long> startTimeUtc = Optional.absent();
@@ -87,6 +89,12 @@ public class Journey implements Parcelable {
         dest.writeTypedList(this.waypoints);
     }
 
+    @Override
+    public String getUploadPath() {
+        return UPLOAD_PATH;
+    }
+
+    @Override
     public JsonObject toJson() {
         JsonArrayBuilder waypointBuilder = Json.createArrayBuilder();
         for (Location loc : this.waypoints) {
