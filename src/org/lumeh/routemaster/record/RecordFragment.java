@@ -18,6 +18,7 @@ import org.lumeh.routemaster.R;
 import org.lumeh.routemaster.models.Account;
 import org.lumeh.routemaster.models.Journey;
 import org.lumeh.routemaster.models.TrackingConfig;
+import org.lumeh.routemaster.server.Uploader;
 
 public class RecordFragment extends Fragment implements LocationListener {
     private static final String TAG = "RouteMaster";
@@ -145,6 +146,11 @@ public class RecordFragment extends Fragment implements LocationListener {
         journey.addWaypoint(loc);
         journeyLatLngs.add(new LatLng(loc.getLatitude(), loc.getLongitude()));
         getMapFragment().setRoutePoints(journeyLatLngs);
+
+        // FIXME: Delete all of this:
+        Uploader up = new Uploader();
+        up.add(journey);
+        up.uploadAll();
     }
 
     @Override
