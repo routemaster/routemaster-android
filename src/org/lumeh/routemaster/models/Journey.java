@@ -65,6 +65,16 @@ public class Journey implements Parcelable, Uploadable {
         return ImmutableList.copyOf(this.waypoints);
     }
 
+    /**
+     * When tracking, this is the current position.
+     */
+    public Optional<Location> getLastWaypoint() {
+        if(waypoints.size() > 0) {
+            return Optional.of(waypoints.get(waypoints.size() - 1));
+        }
+        return Optional.absent();
+    }
+
     public void setStartTimeUtc(long t) {
         this.startTimeUtc = Optional.of(t);
     }

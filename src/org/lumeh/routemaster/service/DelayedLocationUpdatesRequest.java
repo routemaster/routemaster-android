@@ -1,4 +1,4 @@
-package org.lumeh.routemaster.record;
+package org.lumeh.routemaster.service;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -15,7 +15,7 @@ import com.google.android.gms.location.LocationServices;
  * Uses some tricks described on:
  * http://www.rahuljiresal.com/2014/02/user-location-on-android/
  */
-public class LocationGoogleApiClientCallbacks
+public class DelayedLocationUpdatesRequest
                      implements GoogleApiClient.ConnectionCallbacks,
                                 GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "RouteMaster";
@@ -23,9 +23,9 @@ public class LocationGoogleApiClientCallbacks
     private final LocationRequest request;
     private final LocationListener listener;
 
-    public LocationGoogleApiClientCallbacks(GoogleApiClient apiClient,
-                                            LocationRequest request,
-                                            LocationListener listener) {
+    public DelayedLocationUpdatesRequest(GoogleApiClient apiClient,
+                                         LocationRequest request,
+                                         LocationListener listener) {
         this.apiClient = apiClient;
         this.request = request;
         this.listener = listener;
