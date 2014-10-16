@@ -57,8 +57,11 @@ public class Journey implements Parcelable, Uploadable {
     }
 
     public void addWaypoint(Location loc) {
-        // TODO: update distance and efficiency
+        if (this.waypoints.isEmpty()) {
+            this.setStartTimeUtc(loc.getTime());
+        }
         this.waypoints.add(Preconditions.checkNotNull(loc));
+        // TODO: update distance and efficiency
     }
 
     public ImmutableList<Location> getWaypoints() {
@@ -109,7 +112,7 @@ public class Journey implements Parcelable, Uploadable {
         JsonArrayBuilder waypointBuilder = Json.createArrayBuilder();
         for (Location loc : this.waypoints) {
             waypointBuilder.add(Json.createObjectBuilder()
-                    .add("time", toIsoString(loc.getTime()))
+                    .add("timeUtc", toIsoString(loc.getTime()))
                     .add("accuracyM", loc.getAccuracy())
                     .add("latitude", loc.getLatitude())
                     .add("longitude", loc.getLongitude())
