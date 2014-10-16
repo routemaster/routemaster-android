@@ -1,4 +1,7 @@
 <resources>
   <string name="app_name">RouteMaster</string>
   <string name="history_placeholder">This is the history tab</string>
+  <string name="tracking_service_title">RouteMaster is watching you!</string>
+  <string name="tracking_service_text">Walk in a straight line!</string>
+  <string name="tracking_service_ticker">Walk in a straight line!</string>
 </resources>

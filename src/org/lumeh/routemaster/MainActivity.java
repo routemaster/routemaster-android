@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.common.collect.ImmutableList;
 import org.lumeh.routemaster.history.HistoryFragment;
@@ -23,18 +22,9 @@ public class MainActivity extends Activity {
     private static final String TAG_RECORD_FRAGMENT = "recordFragment";
     private static final String TAG_HISTORY_FRAGMENT = "historyFragment";
 
-    private GoogleApiClient googleApiClient;
-
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
-
-        GoogleApiClientCallbacks cb = new GoogleApiClientCallbacks();
-        googleApiClient = new GoogleApiClient.Builder(this)
-            .addApi(LocationServices.API)
-            .addConnectionCallbacks(cb)
-            .addOnConnectionFailedListener(cb)
-            .build();
 
         setContentView(R.layout.main);
         if(state == null) {
@@ -50,8 +40,6 @@ public class MainActivity extends Activity {
             int tabId = state.getInt(STATE_SELECTED_TAB_ID);
             getActionBar().setSelectedNavigationItem(tabId);
         }
-
-        getRecordFragment().setGoogleApiClient(googleApiClient);
     }
 
     /**
@@ -80,12 +68,6 @@ public class MainActivity extends Activity {
                 Toast.LENGTH_LONG
             ).show();
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        googleApiClient.connect();
     }
 
     public RecordFragment getRecordFragment() {
@@ -126,41 +108,10 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        googleApiClient.disconnect();
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         FragmentManager fm = getFragmentManager();
         int tabId = getActionBar().getSelectedNavigationIndex();
         state.putInt(STATE_SELECTED_TAB_ID, tabId);
-    }
-
-    /**
-     * Dummy logging callbacks for the GoogleApiClient. The activity doesn't
-     * have to do anything to handle these events, although RecordFragment does.
-     * <p>
-     * Eventually, this should provide some nicer error-handling.
-     */
-    private class GoogleApiClientCallbacks
-                         implements GoogleApiClient.ConnectionCallbacks,
-                                    GoogleApiClient.OnConnectionFailedListener {
-        @Override
-        public void onConnected(Bundle connectionHint) {
-            Log.i(TAG, "connected to google play services");
-        }
-
-        @Override
-        public void onConnectionSuspended(int cause) {
-            Log.w(TAG, "connected suspended from google play services");
-        }
-
-        @Override
-        public void onConnectionFailed(ConnectionResult result) {
-            Log.w(TAG, "failed to connect to google play services");
-        }
     }
 }
