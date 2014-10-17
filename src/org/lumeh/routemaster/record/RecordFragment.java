@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -78,7 +79,7 @@ public class RecordFragment extends Fragment {
         if(mapFragment == null) {
             mapFragment = new TrackingMapFragment();
             getChildFragmentManager().beginTransaction()
-                .add(R.id.record, mapFragment, TAG_MAP_FRAGMENT)
+                .replace(R.id.map, mapFragment, TAG_MAP_FRAGMENT)
                 .commit();
         }
 
