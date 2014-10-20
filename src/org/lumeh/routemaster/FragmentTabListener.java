@@ -1,9 +1,9 @@
 package org.lumeh.routemaster;
 
-import android.app.ActionBar.Tab;
-import android.app.ActionBar.TabListener;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar.Tab;
+import android.support.v7.app.ActionBar.TabListener;
 
 /**
  * Attach and detach fragments based on tab selections. The tab's state is still

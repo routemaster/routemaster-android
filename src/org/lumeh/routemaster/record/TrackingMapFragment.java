@@ -4,20 +4,22 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.Collections;
 import java.util.List;
+import org.lumeh.routemaster.R;
 
-public class TrackingMapFragment extends MapFragment {
+public class TrackingMapFragment extends SupportMapFragment {
     private static final String TAG = "RouteMaster";
     private static PolylineOptions ROUTE_OPTIONS = new PolylineOptions()
-        .color(0xff33b5e5) // light holo blue
+        .color(R.color.primaryDark)
         .width(7); // screen pixels
 
     private boolean isConfigured = false;
@@ -28,6 +30,8 @@ public class TrackingMapFragment extends MapFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle state) {
         View superView = super.onCreateView(inflater, container, state);
+        superView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
+                                                   LayoutParams.MATCH_PARENT));
 
         // The internal GoogleMap object should now be instantiated
         if(getMap() == null) {
