@@ -1,0 +1,9 @@
+<!--
+  http://www.google.com/design/spec/style/color.html#color-ui-color-palette
+-->
+<resources>
+  <item name="primary" type="color">#259b24</item>
+  <item name="primaryDark" type="color">#0d5302</item>
+  <item name="accent" type="color">#8bc34a</item>
+  <item name="activityBackground" type="color">#d0f8ce</item>
+</resources>
