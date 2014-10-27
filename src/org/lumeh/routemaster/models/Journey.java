@@ -23,7 +23,7 @@ public class Journey implements Parcelable, Uploadable {
     private Optional<Integer> id = Optional.absent();
     private Visibility visibility;
     private Optional<Long> startTimeUtc = Optional.absent();
-    private Optional<Long> endTimeUtc = Optional.absent();
+    private Optional<Long> stopTimeUtc = Optional.absent();
     private double distanceM = 0;
     private int efficiency = 100;
     private List<Location> waypoints = new ArrayList<>();
@@ -49,7 +49,7 @@ public class Journey implements Parcelable, Uploadable {
         this.id = (Optional<Integer>) source.readSerializable();
         this.visibility = (Visibility) source.readSerializable();
         this.startTimeUtc = (Optional<Long>) source.readSerializable();
-        this.endTimeUtc = (Optional<Long>) source.readSerializable();
+        this.stopTimeUtc = (Optional<Long>) source.readSerializable();
         this.distanceM = source.readDouble();
         this.efficiency = source.readInt();
         this.waypoints = new ArrayList<Location>();
@@ -79,8 +79,8 @@ public class Journey implements Parcelable, Uploadable {
         this.startTimeUtc = Optional.of(t);
     }
 
-    public void setEndTimeUtc(long t) {
-        this.endTimeUtc = Optional.of(t);
+    public void setStopTimeUtc(long t) {
+        this.stopTimeUtc = Optional.of(t);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class Journey implements Parcelable, Uploadable {
         dest.writeSerializable(this.id);
         dest.writeSerializable(this.visibility);
         dest.writeSerializable(this.startTimeUtc);
-        dest.writeSerializable(this.endTimeUtc);
+        dest.writeSerializable(this.stopTimeUtc);
         dest.writeDouble(this.distanceM);
         dest.writeInt(this.efficiency);
         dest.writeTypedList(this.waypoints);
@@ -125,8 +125,8 @@ public class Journey implements Parcelable, Uploadable {
         if (this.startTimeUtc.isPresent()) {
             b.add("startTimeUtc", toIsoString(this.startTimeUtc.get()));
         }
-        if (this.endTimeUtc.isPresent()) {
-            b.add("endTimeUtc", toIsoString(this.endTimeUtc.get()));
+        if (this.stopTimeUtc.isPresent()) {
+            b.add("stopTimeUtc", toIsoString(this.stopTimeUtc.get()));
         }
         return b.build();
     }
