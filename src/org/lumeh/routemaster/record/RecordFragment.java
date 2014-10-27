@@ -10,7 +10,9 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -89,6 +91,21 @@ public class RecordFragment extends Fragment {
             journeyLatLngs = state.getParcelableArrayList(TAG_JOURNEY_LATLNGS);
             getMapFragment().setRoutePoints(journeyLatLngs);
         }
+
+        // Make the start/stop button do stuff
+        Button startStop = (Button) getView().findViewById(R.id.startstop);
+        startStop.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                Intent serviceIntent = new Intent(getActivity(),
+                                                  TrackingService.class)
+                    .putExtra(TrackingService.INTENT_TRACKING_CONFIG,
+                              trackingConfig);
+                getActivity().startService(serviceIntent);
+                getActivity().bindService(serviceIntent,
+                                          trackingServiceConnection,
+                                          getActivity().BIND_AUTO_CREATE);
+            }
+        });
     }
 
     public void onStart() {
@@ -102,12 +119,6 @@ public class RecordFragment extends Fragment {
                                                 40.0f); // maxDistanceM
 
         }
-
-        Intent serviceIntent = new Intent(getActivity(), TrackingService.class)
-            .putExtra(TrackingService.INTENT_TRACKING_CONFIG, trackingConfig);
-        getActivity().startService(serviceIntent);
-        getActivity().bindService(serviceIntent, trackingServiceConnection,
-                                  getActivity().BIND_AUTO_CREATE);
     }
 
     public TrackingMapFragment getMapFragment() {
