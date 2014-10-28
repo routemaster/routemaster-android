@@ -227,7 +227,7 @@ public class RecordFragment extends Fragment {
             ));
 
             // FIXME: Delete all of this:
-            journey.setEndTimeUtc(loc.getTime());
+            journey.setStopTimeUtc(loc.getTime());
             Uploader up = new Uploader();
             up.add(journey);
             up.uploadAll();
