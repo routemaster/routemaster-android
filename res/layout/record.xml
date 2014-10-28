@@ -4,6 +4,15 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:id="@+id/record">
-  <!-- A MapFragment is added dynamically. This can't be done statically,
-       because static nested fragments aren't supported. -->
+  <Button android:id="@+id/startstop"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_alignParentBottom="true"
+          android:text="Start!"/>
+  <FrameLayout android:id="@+id/map"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_above="@id/startstop"/>
+  <!-- The FrameLayout is replaced dynamically by a MapFragment. This can't be
+       done statically, because static nested fragments aren't supported. -->
 </RelativeLayout>

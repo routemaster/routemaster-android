@@ -10,7 +10,10 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -78,7 +81,7 @@ public class RecordFragment extends Fragment {
         if(mapFragment == null) {
             mapFragment = new TrackingMapFragment();
             getChildFragmentManager().beginTransaction()
-                .add(R.id.record, mapFragment, TAG_MAP_FRAGMENT)
+                .replace(R.id.map, mapFragment, TAG_MAP_FRAGMENT)
                 .commit();
         }
 
@@ -88,6 +91,21 @@ public class RecordFragment extends Fragment {
             journeyLatLngs = state.getParcelableArrayList(TAG_JOURNEY_LATLNGS);
             getMapFragment().setRoutePoints(journeyLatLngs);
         }
+
+        // Make the start/stop button do stuff
+        Button startStop = (Button) getView().findViewById(R.id.startstop);
+        startStop.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                Intent serviceIntent = new Intent(getActivity(),
+                                                  TrackingService.class)
+                    .putExtra(TrackingService.INTENT_TRACKING_CONFIG,
+                              trackingConfig);
+                getActivity().startService(serviceIntent);
+                getActivity().bindService(serviceIntent,
+                                          trackingServiceConnection,
+                                          getActivity().BIND_AUTO_CREATE);
+            }
+        });
     }
 
     public void onStart() {
@@ -101,12 +119,6 @@ public class RecordFragment extends Fragment {
                                                 40.0f); // maxDistanceM
 
         }
-
-        Intent serviceIntent = new Intent(getActivity(), TrackingService.class)
-            .putExtra(TrackingService.INTENT_TRACKING_CONFIG, trackingConfig);
-        getActivity().startService(serviceIntent);
-        getActivity().bindService(serviceIntent, trackingServiceConnection,
-                                  getActivity().BIND_AUTO_CREATE);
     }
 
     public TrackingMapFragment getMapFragment() {
@@ -215,6 +227,7 @@ public class RecordFragment extends Fragment {
             ));
 
             // FIXME: Delete all of this:
+            journey.setEndTimeUtc(loc.getTime());
             Uploader up = new Uploader();
             up.add(journey);
             up.uploadAll();
