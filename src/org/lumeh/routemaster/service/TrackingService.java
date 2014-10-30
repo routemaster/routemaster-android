@@ -17,6 +17,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.lumeh.routemaster.MainActivity;
@@ -180,6 +181,29 @@ public class TrackingService extends Service implements LocationListener {
      */
     @Override
     public void onLocationChanged(Location loc) {
+        // FIXME: When there's a low-accuracy reading followed by a
+        // high-accuracy reading within 10m, the location never actually
+        // gets read, because the LocationApi doesn't fill us on on better
+        // accuracy readings. We need to make *another* LocationRequest when
+        // this happens for a one-off reading.
+        //
+        // Another person with the same problem:
+        // http://stackoverflow.com/q/22365188/130598
+        if(loc.getAccuracy() > trackingConfig.get().getMinAccuracyM()) {
+            Log.d(TAG, "ignoring inaccurate location");
+            return;
+        }
+
+        ImmutableList<Location> waypoints = journey.get().getWaypoints();
+        if(waypoints.size() > 0) {
+            Location prevLoc = waypoints.get(waypoints.size() - 1);
+            float distanceM = prevLoc.distanceTo(loc);
+            if(distanceM > trackingConfig.get().getMaxDistanceM()) {
+                // TODO: actually discard
+                Log.w(TAG, "route has a large jump, should be discarded");
+            }
+        }
+
         journey.get().addWaypoint(loc);
         for(TrackingListener l : listeners) {
             l.onUpdate(loc, journey.get());
