@@ -22,7 +22,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import org.lumeh.routemaster.R;
@@ -192,28 +191,6 @@ public class RecordFragment extends Fragment {
 
         @Override
         public void onUpdate(Location loc, Journey journey) {
-            // FIXME: When there's a low-accuracy reading followed by a
-            // high-accuracy reading within 10m, the location never actually
-            // gets read, because the LocationApi doesn't fill us on on better
-            // accuracy readings. We need to make *another* LocationRequest when
-            // this happens for a one-off reading.
-            //
-            // Another person with the same problem:
-            // http://stackoverflow.com/q/22365188/130598
-            if(loc.getAccuracy() > trackingConfig.getMinAccuracyM()) {
-                Log.d(TAG, "ignoring inaccurate location");
-                return;
-            }
-
-            ImmutableList<Location> waypoints = journey.getWaypoints();
-            if(waypoints.size() > 0) {
-                Location prevLoc = waypoints.get(waypoints.size() - 1);
-                if(prevLoc.distanceTo(loc) > trackingConfig.getMaxDistanceM()) {
-                    // TODO: actually discard
-                    Log.w(TAG, "route has a large jump, should be discarded");
-                }
-            }
-
             // draw the updated route
             getMapFragment().setRoutePoints(Lists.transform(
                 journey.getWaypoints(),
