@@ -20,6 +20,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.lumeh.routemaster.MainActivity;
 import org.lumeh.routemaster.NotificationIds;
 import org.lumeh.routemaster.R;
@@ -35,6 +37,7 @@ public class TrackingService extends Service implements LocationListener {
     private static final String TAG = "RouteMaster";
     public static final String INTENT_TRACKING_CONFIG =
         TrackingConfig.class.getName();
+    public static final long NOBODY_CARES_TIMEOUT_MS = 5000;
 
     private final ServiceBinder<TrackingService> binder =
         new ServiceBinder<>(this);
@@ -53,7 +56,43 @@ public class TrackingService extends Service implements LocationListener {
     private Optional<Journey> journey = Optional.absent();
 
     private Optional<GoogleApiClient> apiClient = Optional.absent();
+    private Optional<DelayedLocationUpdatesRequest> locationCallbacks =
+        Optional.absent();
     private final ArrayList<TrackingListener> listeners = new ArrayList<>();
+
+    private Timer stopMyselfIfNobodyCaresTimer = new Timer();
+    private boolean isTracking = false;
+    private int references = 0;
+
+    /**
+     * Decrement reference count. When this gets to zero, we set a timer, and if
+     * nobody else has increased the reference count (by binding to the service,
+     * for example) when the timer expires, we stop the service.
+     */
+    private void decrementReferences() {
+        if(references > 0) {
+            references--;
+        } else {
+            Log.w(TAG, "decrementReferences() called and references is 0");
+        }
+        if(references == 0) {
+            stopMyselfIfNobodyCaresTimer.schedule(new TimerTask() {
+                public void run() {
+                    stopSelf();
+                }
+            }, NOBODY_CARES_TIMEOUT_MS);
+        }
+    }
+
+    /**
+     * Increment reference count. Cancel the timer.
+     * See {@link #decrementReference}.
+     */
+    private void incrementReferences() {
+        references++;
+        stopMyselfIfNobodyCaresTimer.cancel();
+        stopMyselfIfNobodyCaresTimer = new Timer();
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -75,39 +114,71 @@ public class TrackingService extends Service implements LocationListener {
                 .addApi(LocationServices.API)
                 .build()
         );
-
-        startTracking();
+        locationCallbacks = Optional.of(
+            new DelayedLocationUpdatesRequest(
+                apiClient.get(), locationRequest, this
+            )
+        );
 
         // add logging callbacks, eventually we'll add
         GoogleApiClientCallbacks callbacks = new GoogleApiClientCallbacks();
         apiClient.get().registerConnectionCallbacks(callbacks);
         apiClient.get().registerConnectionFailedListener(callbacks);
-
-        startForeground();
-
         apiClient.get().connect();
 
         // TODO: use START_REDELIVER_INTENT and restore the journey somehow
         return START_NOT_STICKY;
     }
 
-    protected void startTracking() {
-        // update locationRequest with the trackingConfig
-        locationRequest
-            .setInterval(trackingConfig.get().getPollingIntervalMs())
-            .setSmallestDisplacement(
-                trackingConfig.get().getGeofencingDistanceM());
+    public void startTracking() {
+        if(!isTracking) {
+            // update locationRequest with the trackingConfig
+            locationRequest
+                .setInterval(trackingConfig.get().getPollingIntervalMs())
+                .setSmallestDisplacement(
+                    trackingConfig.get().getGeofencingDistanceM());
 
-        DelayedLocationUpdatesRequest locationCallbacks =
-            new DelayedLocationUpdatesRequest(
-                apiClient.get(), locationRequest, this
+            apiClient.get().registerConnectionCallbacks(
+                locationCallbacks.get()
             );
-        apiClient.get().registerConnectionCallbacks(locationCallbacks);
-        apiClient.get().registerConnectionFailedListener(locationCallbacks);
+            apiClient.get().registerConnectionFailedListener(
+                locationCallbacks.get()
+            );
+            startForeground();
+            isTracking = true;
+            incrementReferences();
+        } else {
+            Log.w(TAG, "startTracking() called but isTracking is true");
+        }
+    }
+
+    public void stopTracking() {
+        if(isTracking) {
+            stopForeground();
+
+            apiClient.get().unregisterConnectionCallbacks(
+                locationCallbacks.get()
+            );
+            apiClient.get().unregisterConnectionFailedListener(
+                locationCallbacks.get()
+            );
+
+            locationCallbacks.get().disconnect();
+
+            isTracking = false;
+            decrementReferences();
+        } else {
+            Log.w(TAG, "stopTracking() called but isTracking is false");
+        }
+    }
+
+    public boolean getIsTracking() {
+        return isTracking;
     }
 
     /**
-     * Start as a foreground service to avoid being killed.
+     * Start as a foreground service (to avoid being killed) and display a
+     * notification which opens the main activity when clicked.
      */
     protected void startForeground() {
         Intent intent = new Intent(this, MainActivity.class);
@@ -131,9 +202,25 @@ public class TrackingService extends Service implements LocationListener {
         startForeground(NotificationIds.TRACKING_SERVICE, notification);
     }
 
+    /**
+     * Stop being foregrounded (and remove the notification), allowing the
+     * service to be killed.
+     */
+    protected void stopForeground() {
+        stopForeground(true);
+    }
+
     @Override
     public ServiceBinder<TrackingService> onBind(Intent intent) {
+        incrementReferences();
         return binder;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        super.onUnbind(intent);
+        decrementReferences();
+        return false;
     }
 
     /**
@@ -143,6 +230,7 @@ public class TrackingService extends Service implements LocationListener {
      */
     public void registerTrackingListener(TrackingListener... listeners) {
         this.listeners.addAll(Arrays.asList(listeners));
+        incrementReferences();
 
         // If tracking has already started...
         if(journey.isPresent()) {
@@ -166,6 +254,7 @@ public class TrackingService extends Service implements LocationListener {
      */
     public void unregisterTrackingListener(TrackingListener... listeners) {
         this.listeners.removeAll(Arrays.asList(listeners));
+        decrementReferences();
     }
 
     /**

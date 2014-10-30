@@ -46,4 +46,10 @@ public class DelayedLocationUpdatesRequest
     public void onConnectionFailed(ConnectionResult result) {
         // TODO: fall back to LocationManager
     }
+
+    public void disconnect() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+            apiClient, listener
+        );
+    }
 }

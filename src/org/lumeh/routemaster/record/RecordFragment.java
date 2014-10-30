@@ -10,7 +10,9 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -39,6 +41,7 @@ public class RecordFragment extends Fragment {
     private static final String TAG_JOURNEY = "journey";
     private static final String TAG_JOURNEY_LATLNGS = "journeyLatLngs";
 
+    private Button startStopButton;
     private Journey journey;
     private TrackingConfig trackingConfig;
     private TrackingMapFragment mapFragment;
@@ -88,6 +91,10 @@ public class RecordFragment extends Fragment {
             journeyLatLngs = state.getParcelableArrayList(TAG_JOURNEY_LATLNGS);
             getMapFragment().setRoutePoints(journeyLatLngs);
         }
+
+        // grab the start/stop button for later. Functionality is attached
+        // in TrackingServiceConnection.onServiceConnected()
+        startStopButton = (Button) getView().findViewById(R.id.startstop);
     }
 
     public void onStart() {
@@ -158,6 +165,22 @@ public class RecordFragment extends Fragment {
                 ((ServiceBinder<TrackingService>) binder).getService()
             );
             service.get().registerTrackingListener(trackingListener);
+
+            // Initialize the startstop button
+            startStopButton.setOnClickListener(new OnClickListener() {
+                public void onClick(View v) {
+                    if(service.get().getIsTracking()) {
+                        service.get().stopTracking();
+                        startStopButton.setText("Start");
+                    } else {
+                        service.get().startTracking();
+                        startStopButton.setText("Stop");
+                    }
+                }
+            });
+            startStopButton.setText(
+                service.get().getIsTracking() ? "Stop" : "Start"
+            );
         }
 
         public Optional<TrackingService> getService() {
