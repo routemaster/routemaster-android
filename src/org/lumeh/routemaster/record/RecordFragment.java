@@ -23,12 +23,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import org.lumeh.routemaster.R;
-import org.lumeh.routemaster.models.Account;
 import org.lumeh.routemaster.models.Journey;
 import org.lumeh.routemaster.models.TrackingConfig;
-import org.lumeh.routemaster.server.Uploader;
 import org.lumeh.routemaster.service.ServiceBinder;
 import org.lumeh.routemaster.service.TrackingListener.TrackingError;
 import org.lumeh.routemaster.service.TrackingListener;
@@ -38,21 +35,13 @@ public class RecordFragment extends Fragment {
     private static final String TAG = "RouteMaster";
 
     private static final String TAG_MAP_FRAGMENT = "mapFragment";
-    private static final String TAG_JOURNEY = "journey";
-    private static final String TAG_JOURNEY_LATLNGS = "journeyLatLngs";
 
-    private Journey journey;
+    private Button startStopButton;
     private TrackingConfig trackingConfig;
     private TrackingMapFragment mapFragment;
     private TrackingServiceConnection trackingServiceConnection =
         new TrackingServiceConnection();
     private TrackingListener trackingListener = new RecordTrackingListener();
-
-    /**
-     * Store visited locations as LatLng, the data format Polyline requires,
-     * avoiding converting the Locations on every update.
-     */
-    private ArrayList<LatLng> journeyLatLngs = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -84,27 +73,9 @@ public class RecordFragment extends Fragment {
                 .commit();
         }
 
-        // restore from state
-        if(state != null) {
-            journey = state.getParcelable(TAG_JOURNEY);
-            journeyLatLngs = state.getParcelableArrayList(TAG_JOURNEY_LATLNGS);
-            getMapFragment().setRoutePoints(journeyLatLngs);
-        }
-
-        // Make the start/stop button do stuff
-        Button startStop = (Button) getView().findViewById(R.id.startstop);
-        startStop.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                Intent serviceIntent = new Intent(getActivity(),
-                                                  TrackingService.class)
-                    .putExtra(TrackingService.INTENT_TRACKING_CONFIG,
-                              trackingConfig);
-                getActivity().startService(serviceIntent);
-                getActivity().bindService(serviceIntent,
-                                          trackingServiceConnection,
-                                          getActivity().BIND_AUTO_CREATE);
-            }
-        });
+        // grab the start/stop button for later. Functionality is attached
+        // in TrackingServiceConnection.onServiceConnected()
+        startStopButton = (Button) getView().findViewById(R.id.startstop);
     }
 
     public void onStart() {
@@ -118,6 +89,12 @@ public class RecordFragment extends Fragment {
                                                 40.0f); // maxDistanceM
 
         }
+
+        Intent serviceIntent = new Intent(getActivity(), TrackingService.class)
+            .putExtra(TrackingService.INTENT_TRACKING_CONFIG, trackingConfig);
+        getActivity().startService(serviceIntent);
+        getActivity().bindService(serviceIntent, trackingServiceConnection,
+                                  getActivity().BIND_AUTO_CREATE);
     }
 
     public TrackingMapFragment getMapFragment() {
@@ -144,13 +121,6 @@ public class RecordFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle state) {
-        super.onSaveInstanceState(state);
-        state.putParcelable(TAG_JOURNEY, journey);
-        state.putParcelableArrayList(TAG_JOURNEY_LATLNGS, journeyLatLngs);
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
         if(trackingServiceConnection.getService().isPresent()) {
@@ -158,6 +128,19 @@ public class RecordFragment extends Fragment {
                 .unregisterTrackingListener(trackingListener);
         }
         getActivity().unbindService(trackingServiceConnection);
+    }
+
+    protected void updateMap(Journey journey) {
+        getMapFragment().setRoutePoints(Lists.transform(
+            journey.getWaypoints(),
+            new Function<Location, LatLng>() {
+                @Override
+                public LatLng apply(Location loc) {
+                    return new LatLng(loc.getLatitude(),
+                                      loc.getLongitude());
+                }
+            }
+        ));
     }
 
     protected class TrackingServiceConnection implements ServiceConnection {
@@ -169,6 +152,22 @@ public class RecordFragment extends Fragment {
                 ((ServiceBinder<TrackingService>) binder).getService()
             );
             service.get().registerTrackingListener(trackingListener);
+
+            // Initialize the startstop button
+            startStopButton.setOnClickListener(new OnClickListener() {
+                public void onClick(View v) {
+                    if(service.get().getIsTracking()) {
+                        service.get().stopTracking();
+                        startStopButton.setText("Start");
+                    } else {
+                        service.get().startTracking();
+                        startStopButton.setText("Stop");
+                    }
+                }
+            });
+            startStopButton.setText(
+                service.get().getIsTracking() ? "Stop" : "Start"
+            );
         }
 
         public Optional<TrackingService> getService() {
@@ -187,27 +186,13 @@ public class RecordFragment extends Fragment {
 
     protected class RecordTrackingListener implements TrackingListener {
         @Override
-        public void onStart(Journey journey) { }
+        public void onStart(Journey journey) {
+            updateMap(journey);
+        }
 
         @Override
         public void onUpdate(Location loc, Journey journey) {
-            // draw the updated route
-            getMapFragment().setRoutePoints(Lists.transform(
-                journey.getWaypoints(),
-                new Function<Location, LatLng>() {
-                    @Override
-                    public LatLng apply(Location loc) {
-                        return new LatLng(loc.getLatitude(),
-                                          loc.getLongitude());
-                    }
-                }
-            ));
-
-            // FIXME: Delete all of this:
-            journey.setStopTimeUtc(loc.getTime());
-            Uploader up = new Uploader();
-            up.add(journey);
-            up.uploadAll();
+            updateMap(journey);
         }
 
         @Override
