@@ -28,6 +28,7 @@ import org.lumeh.routemaster.R;
 import org.lumeh.routemaster.models.Account;
 import org.lumeh.routemaster.models.Journey;
 import org.lumeh.routemaster.models.TrackingConfig;
+import org.lumeh.routemaster.server.Uploader;
 
 /**
  * http://www.rahuljiresal.com/2014/02/user-location-on-android/
@@ -106,8 +107,6 @@ public class TrackingService extends Service implements LocationListener {
         trackingConfig = Optional.of((TrackingConfig)
             intent.getExtras().getParcelable(INTENT_TRACKING_CONFIG)
         );
-        // TODO: Account is not parcelable
-        journey = Optional.of(new Journey(new Account()));
 
         apiClient = Optional.of(
             new GoogleApiClient.Builder(this)
@@ -132,6 +131,9 @@ public class TrackingService extends Service implements LocationListener {
 
     public void startTracking() {
         if(!isTracking) {
+            // TODO: Account is not parcelable
+            journey = Optional.of(new Journey(new Account()));
+
             // update locationRequest with the trackingConfig
             locationRequest
                 .setInterval(trackingConfig.get().getPollingIntervalMs())
@@ -147,6 +149,10 @@ public class TrackingService extends Service implements LocationListener {
             startForeground();
             isTracking = true;
             incrementReferences();
+
+            for(TrackingListener l : listeners) {
+                l.onStart(journey.get());
+            }
         } else {
             Log.w(TAG, "startTracking() called but isTracking is true");
         }
@@ -155,16 +161,25 @@ public class TrackingService extends Service implements LocationListener {
     public void stopTracking() {
         if(isTracking) {
             stopForeground();
-
             apiClient.get().unregisterConnectionCallbacks(
                 locationCallbacks.get()
             );
             apiClient.get().unregisterConnectionFailedListener(
                 locationCallbacks.get()
             );
-
             locationCallbacks.get().disconnect();
 
+            Journey j = journey.get();
+            if(j.getWaypoints().size() > 0) {
+                j.setStopTimeUtc(j.getLastWaypoint().get().getTime());
+                Uploader up = new Uploader();
+                up.add(journey.get());
+                up.uploadAll();
+            }
+
+            for(TrackingListener l : listeners) {
+                l.onStop(journey.get());
+            }
             isTracking = false;
             decrementReferences();
         } else {

@@ -23,12 +23,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import org.lumeh.routemaster.R;
-import org.lumeh.routemaster.models.Account;
 import org.lumeh.routemaster.models.Journey;
 import org.lumeh.routemaster.models.TrackingConfig;
-import org.lumeh.routemaster.server.Uploader;
 import org.lumeh.routemaster.service.ServiceBinder;
 import org.lumeh.routemaster.service.TrackingListener.TrackingError;
 import org.lumeh.routemaster.service.TrackingListener;
@@ -38,22 +35,13 @@ public class RecordFragment extends Fragment {
     private static final String TAG = "RouteMaster";
 
     private static final String TAG_MAP_FRAGMENT = "mapFragment";
-    private static final String TAG_JOURNEY = "journey";
-    private static final String TAG_JOURNEY_LATLNGS = "journeyLatLngs";
 
     private Button startStopButton;
-    private Journey journey;
     private TrackingConfig trackingConfig;
     private TrackingMapFragment mapFragment;
     private TrackingServiceConnection trackingServiceConnection =
         new TrackingServiceConnection();
     private TrackingListener trackingListener = new RecordTrackingListener();
-
-    /**
-     * Store visited locations as LatLng, the data format Polyline requires,
-     * avoiding converting the Locations on every update.
-     */
-    private ArrayList<LatLng> journeyLatLngs = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -83,13 +71,6 @@ public class RecordFragment extends Fragment {
             getChildFragmentManager().beginTransaction()
                 .replace(R.id.map, mapFragment, TAG_MAP_FRAGMENT)
                 .commit();
-        }
-
-        // restore from state
-        if(state != null) {
-            journey = state.getParcelable(TAG_JOURNEY);
-            journeyLatLngs = state.getParcelableArrayList(TAG_JOURNEY_LATLNGS);
-            getMapFragment().setRoutePoints(journeyLatLngs);
         }
 
         // grab the start/stop button for later. Functionality is attached
@@ -140,13 +121,6 @@ public class RecordFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle state) {
-        super.onSaveInstanceState(state);
-        state.putParcelable(TAG_JOURNEY, journey);
-        state.putParcelableArrayList(TAG_JOURNEY_LATLNGS, journeyLatLngs);
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
         if(trackingServiceConnection.getService().isPresent()) {
@@ -154,6 +128,19 @@ public class RecordFragment extends Fragment {
                 .unregisterTrackingListener(trackingListener);
         }
         getActivity().unbindService(trackingServiceConnection);
+    }
+
+    protected void updateMap(Journey journey) {
+        getMapFragment().setRoutePoints(Lists.transform(
+            journey.getWaypoints(),
+            new Function<Location, LatLng>() {
+                @Override
+                public LatLng apply(Location loc) {
+                    return new LatLng(loc.getLatitude(),
+                                      loc.getLongitude());
+                }
+            }
+        ));
     }
 
     protected class TrackingServiceConnection implements ServiceConnection {
@@ -199,27 +186,13 @@ public class RecordFragment extends Fragment {
 
     protected class RecordTrackingListener implements TrackingListener {
         @Override
-        public void onStart(Journey journey) { }
+        public void onStart(Journey journey) {
+            updateMap(journey);
+        }
 
         @Override
         public void onUpdate(Location loc, Journey journey) {
-            // draw the updated route
-            getMapFragment().setRoutePoints(Lists.transform(
-                journey.getWaypoints(),
-                new Function<Location, LatLng>() {
-                    @Override
-                    public LatLng apply(Location loc) {
-                        return new LatLng(loc.getLatitude(),
-                                          loc.getLongitude());
-                    }
-                }
-            ));
-
-            // FIXME: Delete all of this:
-            journey.setStopTimeUtc(loc.getTime());
-            Uploader up = new Uploader();
-            up.add(journey);
-            up.uploadAll();
+            updateMap(journey);
         }
 
         @Override
