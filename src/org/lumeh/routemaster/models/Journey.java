@@ -6,13 +6,13 @@ import android.os.Parcelable;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import static org.lumeh.routemaster.util.Dates.toIsoString;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.lumeh.routemaster.util.Dates;
 
 /**
  * A particular instance of walking from one Place to another.
@@ -54,6 +54,41 @@ public class Journey implements Parcelable, Uploadable {
         this.efficiency = source.readInt();
         this.waypoints = new ArrayList<Location>();
         source.readTypedList(this.waypoints, Location.CREATOR);
+    }
+
+    public Journey(JSONObject j) {
+        try {
+            this.id = Optional.of(j.getInt("id"));
+            this.visibility = Visibility.get(j.getString("visibility"));
+            try {
+                this.startTimeUtc = Optional.of(
+                        Dates.toMillisSinceEpoch(j.getString("startTimeUtc")));
+                this.stopTimeUtc = Optional.of(
+                        Dates.toMillisSinceEpoch(j.getString("stopTimeUtc")));
+            } catch (ParseException e) {
+                throw new RuntimeException("Couldn't parse date in JSON", e);
+            }
+            this.distanceM = j.getDouble("distanceM");
+            this.efficiency = j.getInt("efficiency");
+            this.waypoints = new ArrayList<Location>();
+            JSONArray waypoints = j.getJSONArray("waypoints");
+            for (int i = 0; i < waypoints.length(); i++) {
+                JSONObject w = waypoints.getJSONObject(i);
+                Location loc = new Location("RouteMaster");
+                try {
+                    loc.setTime(Dates.toMillisSinceEpoch(w.getString("timeUtc")));
+                } catch (ParseException e) {
+                    throw new RuntimeException("Couldn't parse date in JSON", e);
+                }
+                loc.setAccuracy((float) w.getDouble("accuracyM"));
+                loc.setLatitude(w.getDouble("latitude"));
+                loc.setLongitude(w.getDouble("longitude"));
+                loc.setAltitude(w.getDouble("heightM"));
+                this.waypoints.add(loc);
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void addWaypoint(Location loc) {
@@ -108,29 +143,33 @@ public class Journey implements Parcelable, Uploadable {
     }
 
     @Override
-    public JsonObject toJson() {
-        JsonArrayBuilder waypointBuilder = Json.createArrayBuilder();
-        for (Location loc : this.waypoints) {
-            waypointBuilder.add(Json.createObjectBuilder()
-                    .add("timeUtc", toIsoString(loc.getTime()))
-                    .add("accuracyM", loc.getAccuracy())
-                    .add("latitude", loc.getLatitude())
-                    .add("longitude", loc.getLongitude())
-                    .add("heightM", loc.getAltitude())
-                    .build());
+    public JSONObject toJson() {
+        JSONObject b;
+        try {
+            b = new JSONObject();
+            JSONArray waypoints = new JSONArray();
+            for (Location loc : this.waypoints) {
+                waypoints.put(new JSONObject()
+                        .put("timeUtc", Dates.toIsoString(loc.getTime()))
+                        .put("accuracyM", loc.getAccuracy())
+                        .put("latitude", loc.getLatitude())
+                        .put("longitude", loc.getLongitude())
+                        .put("heightM", loc.getAltitude()));
+            }
+            b.put("visibility", this.visibility.toString());
+            b.put("waypoints", waypoints);
+            if (this.id.isPresent()) {
+                b.put("id", this.id.get());
+            }
+            if (this.startTimeUtc.isPresent()) {
+                b.put("startTimeUtc", Dates.toIsoString(this.startTimeUtc.get()));
+            }
+            if (this.stopTimeUtc.isPresent()) {
+                b.put("stopTimeUtc", Dates.toIsoString(this.stopTimeUtc.get()));
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
-        JsonObjectBuilder b = Json.createObjectBuilder();
-        b.add("visibility", this.visibility.toString());
-        b.add("waypoints", waypointBuilder.build());
-        if (this.id.isPresent()) {
-            b.add("id", this.id.get());
-        }
-        if (this.startTimeUtc.isPresent()) {
-            b.add("startTimeUtc", toIsoString(this.startTimeUtc.get()));
-        }
-        if (this.stopTimeUtc.isPresent()) {
-            b.add("stopTimeUtc", toIsoString(this.stopTimeUtc.get()));
-        }
-        return b.build();
+        return b;
     }
 }
