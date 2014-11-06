@@ -1,8 +1,8 @@
 package org.lumeh.routemaster.models;
 
-import javax.json.JsonObject;
+import org.json.JSONObject;
 
 public interface Uploadable {
     public String getUploadPath();
-    public JsonObject toJson();
+    public JSONObject toJson();
 }

@@ -14,4 +14,18 @@ public enum Visibility {
     public String toString() {
         return this.value;
     }
+
+    /**
+     * Get the corresponding enum object for the given string value. This is
+     * used to convert strings from JSON data.
+     */
+    public static Visibility get(String value) {
+        for(Visibility v : values()) {
+            if(v.value == value) {
+                return v;
+            }
+        }
+        // Fallback to private in the case of an invalid value
+        return Visibility.PRIVATE;
+    }
 }

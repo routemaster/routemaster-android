@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.lumeh.routemaster.R;
 import com.google.android.gms.maps.model.LatLng;
 import org.lumeh.routemaster.models.Journey;
+import org.lumeh.routemaster.TestData;
 
 public class HistoryCardAdapter
                      extends Adapter<HistoryCardAdapter.HistoryCardViewHolder> {
@@ -109,11 +110,7 @@ public class HistoryCardAdapter
 
             Uri uri = new HistoryMapUriBuilder()
                 .scale(scale)
-                .path(ImmutableList.of(
-                    new LatLng(29.6574919, -82.3418686),
-                    new LatLng(29.6578753, -82.3420161),
-                    new LatLng(29.6578225, -82.3421188)
-                ))
+                .path(TestData.journey)
                 .marker(START_STYLE, new LatLng(29.6574919, -82.3418686))
                 .marker(END_STYLE, new LatLng(29.6578225, -82.3421188))
                 .size((int) Math.ceil(width), (int) Math.ceil(height))
