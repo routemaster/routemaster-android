@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.astuetz.PagerSlidingTabStrip;
 import com.google.common.collect.ImmutableList;
 import org.lumeh.routemaster.FragmentListPagerAdapter.TabEntry;
+import org.lumeh.routemaster.friends.FriendsFragment;
 import org.lumeh.routemaster.history.HistoryFragment;
 import org.lumeh.routemaster.record.RecordFragment;
 
@@ -19,6 +20,7 @@ public class MainActivity extends ActionBarActivity {
     private static final String STATE_SELECTED_TAB_ID = "selectedTabId";
     private static final String TAG_RECORD_FRAGMENT = "recordFragment";
     private static final String TAG_HISTORY_FRAGMENT = "historyFragment";
+    private static final String TAG_FRIENDS_FRAGMENT = "friendsFragment";
 
     @Override
     protected void onCreate(Bundle state) {
@@ -62,7 +64,8 @@ public class MainActivity extends ActionBarActivity {
         FragmentListPagerAdapter adapter = new FragmentListPagerAdapter(
             getSupportFragmentManager(),
             new TabEntry("Record", RecordFragment.class),
-            new TabEntry("History", HistoryFragment.class)
+            new TabEntry("History", HistoryFragment.class),
+            new TabEntry("Friends", FriendsFragment.class)
         );
 
         ViewPager pager = (ViewPager) findViewById(R.id.main);
