@@ -15,13 +15,15 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import com.google.common.collect.ImmutableList;
 import com.squareup.picasso.Picasso;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.inject.Inject;
 import org.lumeh.routemaster.R;
 import com.google.android.gms.maps.model.LatLng;
 import org.lumeh.routemaster.models.Journey;
-import org.lumeh.routemaster.TestData;
 
 public class HistoryCardAdapter
                      extends Adapter<HistoryCardAdapter.HistoryCardViewHolder> {
@@ -35,15 +37,26 @@ public class HistoryCardAdapter
         .put("size", "med")
         .build();
 
-    private ImmutableList<Journey> journeys;
+    private List<Journey> journeys;
 
-    public HistoryCardAdapter(Collection<Journey> journeys) {
-        this.journeys = ImmutableList.copyOf(journeys);
+    @Inject Picasso picasso;
+
+    public HistoryCardAdapter() {
+        this(Collections.<Journey>emptyList());
+    }
+
+    public HistoryCardAdapter(Collection<Journey> collection) {
+        journeys = new ArrayList<>(collection);
+    }
+
+    public void setJourneys(Collection<Journey> collection) {
+        journeys = new ArrayList<>(collection);
+        notifyDataSetChanged();
     }
 
     @Override
     public int getItemCount() {
-        return 1000;
+        return journeys.size();
     }
 
     @Override
@@ -59,7 +72,7 @@ public class HistoryCardAdapter
         holder.getStartTimeView().setText("st " + position);
         holder.getDistanceView().setText("dist " + position);
         holder.getEfficiencyView().setText("eff " + position);
-        holder.getLayout().post(new InjectMapRunnable(holder));
+        holder.getLayout().post(new InjectMapRunnable(holder, journeys.get(0)));
     }
 
     /**
@@ -68,11 +81,14 @@ public class HistoryCardAdapter
      * element's layout executes. Before the layout executes, the map's width
      * and height may be either incorrect or undefined as zero.
      */
-    private static class InjectMapRunnable implements Runnable {
+    private class InjectMapRunnable implements Runnable {
         private final HistoryCardViewHolder holder;
+        private final Journey journey;
 
-        public InjectMapRunnable(HistoryCardViewHolder holder) {
+        public InjectMapRunnable(HistoryCardViewHolder holder,
+                                 Journey journey) {
             this.holder = holder;
+            this.journey = journey;
         }
 
         @Override
@@ -110,17 +126,13 @@ public class HistoryCardAdapter
 
             Uri uri = new HistoryMapUriBuilder()
                 .scale(scale)
-                .path(TestData.journey)
+                .path(journey)
                 .marker(START_STYLE, new LatLng(29.6574919, -82.3418686))
                 .marker(END_STYLE, new LatLng(29.6578225, -82.3421188))
                 .size((int) Math.ceil(width), (int) Math.ceil(height))
                 .build();
 
-            // Picasso.with(holder.getCardView().getContext())
-            //     .setIndicatorsEnabled(true);
-            Picasso.with(holder.getCardView().getContext())
-                .load(uri)
-                .into(holder.getMapView());
+            picasso.load(uri).into(holder.getMapView());
         }
     }
 
