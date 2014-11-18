@@ -5,16 +5,22 @@
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:background="@color/activityBackground">
-  <com.astuetz.PagerSlidingTabStrip android:layout_gravity="top"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="48dp"
-                                    android:id="@+id/main_tabs"
-                                    android:background="@color/primaryDark"
-                                    android:textColor="#ffffff"
-                                    app:pstsIndicatorColor="@color/accent"
-                                    app:pstsUnderlineColor="@color/accent"
-                                    app:pstsDividerColor="@color/primary"
-                                    app:pstsShouldExpand="true"/>
+  <android.support.v7.widget.Toolbar
+      android:id="@+id/toolbar"
+      app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+      android:background="@color/primary"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"/>
+  <com.astuetz.PagerSlidingTabStrip
+      android:layout_gravity="top"
+      android:layout_width="match_parent"
+      android:layout_height="48dp"
+      android:id="@+id/main_tabs"
+      android:background="@color/primary"
+      android:textColor="@color/actionBarForeground"
+      app:pstsIndicatorColor="@color/actionBarForeground"
+      app:pstsUnderlineColor="@color/actionBarForeground"
+      app:pstsShouldExpand="true"/>
   <android.support.v4.view.ViewPager android:layout_gravity="center"
                                      android:layout_height="60dp"
                                      android:layout_width="match_parent"
