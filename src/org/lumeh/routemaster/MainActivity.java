@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.Toast;
 import com.astuetz.PagerSlidingTabStrip;
@@ -15,7 +14,7 @@ import org.lumeh.routemaster.friends.FriendsFragment;
 import org.lumeh.routemaster.history.HistoryFragment;
 import org.lumeh.routemaster.record.RecordFragment;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends RouteMasterActivity {
     private static final String TAG = "RouteMaster";
     private static final String STATE_SELECTED_TAB_ID = "selectedTabId";
     private static final String TAG_RECORD_FRAGMENT = "recordFragment";
@@ -43,8 +42,6 @@ public class MainActivity extends ActionBarActivity {
      * warnings, errors, and create the initial fragments for the activity.
      */
     protected void onInitialCreate() {
-        Log.i(TAG, "Welcome to RouteMaster!");
-
         // TODO: add better error handling
         LocationManager manager =
             (LocationManager) getSystemService(LOCATION_SERVICE);

@@ -6,11 +6,10 @@ import android.content.ServiceConnection;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
@@ -24,6 +23,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import org.lumeh.routemaster.R;
+import org.lumeh.routemaster.RouteMasterFragment;
 import org.lumeh.routemaster.models.Journey;
 import org.lumeh.routemaster.models.TrackingConfig;
 import org.lumeh.routemaster.service.ServiceBinder;
@@ -31,7 +31,7 @@ import org.lumeh.routemaster.service.TrackingListener.TrackingError;
 import org.lumeh.routemaster.service.TrackingListener;
 import org.lumeh.routemaster.service.TrackingService;
 
-public class RecordFragment extends Fragment {
+public class RecordFragment extends RouteMasterFragment {
     private static final String TAG = "RouteMaster";
 
     private static final String TAG_MAP_FRAGMENT = "mapFragment";
@@ -99,25 +99,6 @@ public class RecordFragment extends Fragment {
 
     public TrackingMapFragment getMapFragment() {
         return mapFragment;
-    }
-
-    /**
-     * This is to work around a bug in Android:
-     * http://stackoverflow.com/a/15656428/130598
-     */
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        try {
-            java.lang.reflect.Field childFragmentManager =
-                Fragment.class.getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override

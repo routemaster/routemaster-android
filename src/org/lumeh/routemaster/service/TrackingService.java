@@ -2,7 +2,6 @@ package org.lumeh.routemaster.service;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Binder;
@@ -18,27 +17,34 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.squareup.otto.Bus;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.inject.Inject;
 import org.lumeh.routemaster.MainActivity;
 import org.lumeh.routemaster.NotificationIds;
 import org.lumeh.routemaster.R;
+import org.lumeh.routemaster.RouteMasterService;
 import org.lumeh.routemaster.models.Account;
 import org.lumeh.routemaster.models.Journey;
 import org.lumeh.routemaster.models.TrackingConfig;
-import org.lumeh.routemaster.server.Uploader;
+import org.lumeh.routemaster.net.JourneyEvent;
 
 /**
  * http://www.rahuljiresal.com/2014/02/user-location-on-android/
  */
-public class TrackingService extends Service implements LocationListener {
+public class TrackingService extends RouteMasterService
+                             implements LocationListener {
 
     private static final String TAG = "RouteMaster";
     public static final String INTENT_TRACKING_CONFIG =
         TrackingConfig.class.getName();
     public static final long NOBODY_CARES_TIMEOUT_MS = 5000;
+
+    @Inject Bus bus;
 
     private final ServiceBinder<TrackingService> binder =
         new ServiceBinder<>(this);
@@ -125,6 +131,8 @@ public class TrackingService extends Service implements LocationListener {
         apiClient.get().registerConnectionFailedListener(callbacks);
         apiClient.get().connect();
 
+        bus.register(this);
+
         // TODO: use START_REDELIVER_INTENT and restore the journey somehow
         return START_NOT_STICKY;
     }
@@ -171,10 +179,8 @@ public class TrackingService extends Service implements LocationListener {
 
             Journey j = journey.get();
             if(j.getWaypoints().size() > 0) {
-                j.setStopTimeUtc(j.getLastWaypoint().get().getTime());
-                Uploader up = new Uploader();
-                up.add(journey.get());
-                up.uploadAll();
+                j.setStopTimeUtc(new Date(j.getLastWaypoint().get().getTime()));
+                bus.post(new JourneyEvent.Post(j));
             }
 
             for(TrackingListener l : listeners) {
@@ -325,6 +331,7 @@ public class TrackingService extends Service implements LocationListener {
         super.onDestroy();
         apiClient.get().disconnect();
         apiClient = Optional.absent();
+        bus.unregister(this);
     }
 
     /**
