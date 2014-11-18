@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.Toast;
 import com.astuetz.PagerSlidingTabStrip;
@@ -26,6 +27,7 @@ public class MainActivity extends RouteMasterActivity {
         super.onCreate(state);
 
         setContentView(R.layout.main);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportFragmentManager().executePendingTransactions();
 
         if(state == null) {

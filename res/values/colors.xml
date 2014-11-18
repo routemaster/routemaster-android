@@ -4,6 +4,7 @@
 <resources>
   <item name="primary" type="color">#259b24</item>
   <item name="primaryDark" type="color">#0d5302</item>
+  <item name="actionBarForeground" type="color">#ffffff</item>
   <item name="accent" type="color">#8bc34a</item>
   <item name="activityBackground" type="color">#d0f8ce</item>
 </resources>
