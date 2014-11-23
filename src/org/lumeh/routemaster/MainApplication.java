@@ -39,8 +39,7 @@ public class MainApplication extends Application {
 
     @Module(
         includes = {
-            NetworkModule.class,
-            TestDataModule.class
+            NetworkModule.class
         },
         injects = {
             HistoryFragment.class,
