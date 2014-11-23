@@ -18,7 +18,7 @@ import org.lumeh.routemaster.util.Dates;
  */
 public class Journey implements Parcelable {
 
-    private Optional<Integer> id = Optional.absent();
+    private Optional<String> id = Optional.absent();
     private Visibility visibility;
     private Optional<Date> startTimeUtc = Optional.absent();
     private Optional<Date> stopTimeUtc = Optional.absent();
@@ -44,7 +44,7 @@ public class Journey implements Parcelable {
     }
 
     public Journey(Parcel source) {
-        this.id = (Optional<Integer>) source.readSerializable();
+        this.id = (Optional<String>) source.readSerializable();
         this.visibility = (Visibility) source.readSerializable();
         this.startTimeUtc = (Optional<Date>) source.readSerializable();
         this.stopTimeUtc = (Optional<Date>) source.readSerializable();
@@ -52,6 +52,14 @@ public class Journey implements Parcelable {
         this.efficiency = source.readInt();
         this.waypoints = new ArrayList<Location>();
         source.readTypedList(this.waypoints, Location.CREATOR);
+    }
+
+    public double getDistanceM() {
+        return distanceM;
+    }
+
+    public int getEfficiency() {
+        return efficiency;
     }
 
     public void addWaypoint(Location loc) {
@@ -64,6 +72,13 @@ public class Journey implements Parcelable {
 
     public ImmutableList<Location> getWaypoints() {
         return ImmutableList.copyOf(this.waypoints);
+    }
+
+    public Optional<Location> getFirstWaypoint() {
+        if(waypoints.size() > 0) {
+            return Optional.of(waypoints.get(0));
+        }
+        return Optional.absent();
     }
 
     /**
@@ -80,8 +95,16 @@ public class Journey implements Parcelable {
         this.startTimeUtc = Optional.of(t);
     }
 
+    public Optional<Date> getStartTimeUtc() {
+        return startTimeUtc;
+    }
+
     public void setStopTimeUtc(Date t) {
         this.stopTimeUtc = Optional.of(t);
+    }
+
+    public Optional<Date> getStopTimeUtc() {
+        return stopTimeUtc;
     }
 
     @Override

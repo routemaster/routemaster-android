@@ -9,8 +9,8 @@ public class JourneyEvent {
         }
     }
 
-    public static final class Get extends NetworkEvent.Get<Integer> {
-        public Get(int id) {
+    public static final class Get extends NetworkEvent.Get<String> {
+        public Get(String id) {
             super(id);
         }
     }

@@ -7,17 +7,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.google.common.collect.ImmutableList;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 import java.util.Collection;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.lumeh.routemaster.R;
 import org.lumeh.routemaster.RouteMasterFragment;
+import org.lumeh.routemaster.net.RecentJourneysEvent;
 import org.lumeh.routemaster.models.Journey;
 
 public class HistoryFragment extends RouteMasterFragment {
-    @Inject @Named("test data") Journey testJourney;
     @Inject HistoryCardAdapter cardAdapter;
     private RecyclerView recyclerView;
+    @Inject Bus bus;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -30,9 +33,6 @@ public class HistoryFragment extends RouteMasterFragment {
     public void onActivityCreated(Bundle state) {
         super.onActivityCreated(state);
         recyclerView = (RecyclerView) getView().findViewById(R.id.list);
-        cardAdapter.setJourneys(ImmutableList.of(
-            testJourney, testJourney, testJourney, testJourney
-        ));
 
         // configure the recyclerView
         LinearLayoutManager layoutManager =
@@ -42,5 +42,19 @@ public class HistoryFragment extends RouteMasterFragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(cardAdapter);
+
+        bus.register(this);
+        bus.post(new RecentJourneysEvent.Get("test"));
+    }
+
+    @Subscribe
+    public void onEvent(RecentJourneysEvent.Response ev) {
+        cardAdapter.setJourneys((Collection<Journey>)ev.get());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        bus.unregister(this);
     }
 }

@@ -5,4 +5,6 @@
   <string name="tracking_service_title">RouteMaster is watching you!</string>
   <string name="tracking_service_text">Walk in a straight line!</string>
   <string name="tracking_service_ticker">Walk in a straight line!</string>
+  <string name="traveled_distance">Traveled</string>
+  <string name="efficiency">Efficiency</string>
 </resources>

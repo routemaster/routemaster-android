@@ -1,5 +1,6 @@
 package org.lumeh.routemaster.net;
 
+import java.util.List;
 import org.lumeh.routemaster.models.Journey;
 import retrofit.Callback;
 import retrofit.http.Body;
@@ -18,5 +19,9 @@ public interface RouteMasterApi {
     public void postJourney(@Body Journey journey, Callback<Journey> cb);
 
     @GET("/journey/{id}")
-    public void getJourney(@Path("id") int id, Callback<Journey> cb);
+    public void getJourney(@Path("id") String id, Callback<Journey> cb);
+
+    @GET("/account/{id}/recent")
+    public void getRecentJourneys(@Path("id") String id,
+                                  Callback<List<Journey>> cb);
 }
