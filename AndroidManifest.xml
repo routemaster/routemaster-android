@@ -3,6 +3,7 @@
           android:versionCode="1"
           android:versionName="1.0">
   <application android:name="org.lumeh.routemaster.MainApplication"
+               android:icon="@drawable/routemaster_m"
                android:label="@string/app_name"
                android:theme="@style/RouteMasterTheme"
                android:allowBackup="true">
