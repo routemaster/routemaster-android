@@ -47,10 +47,11 @@ public class NetworkModule {
 
     @Provides
     @Singleton
-    RouteMasterApi provideRouteMasterApi(Client client) {
+    RouteMasterApi provideRouteMasterApi(Client client, Converter converter) {
         return new RestAdapter.Builder()
             .setEndpoint("http://routemaster.lumeh.org")
             .setClient(client)
+            .setConverter(converter)
             .build()
             .create(RouteMasterApi.class);
     }
