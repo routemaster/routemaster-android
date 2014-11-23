@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import org.lumeh.routemaster.util.Dates;
 
 /**
@@ -18,7 +19,7 @@ import org.lumeh.routemaster.util.Dates;
  */
 public class Journey implements Parcelable {
 
-    private Optional<String> id = Optional.absent();
+    private String id = UUID.randomUUID().toString();
     private Visibility visibility;
     private Optional<Date> startTimeUtc = Optional.absent();
     private Optional<Date> stopTimeUtc = Optional.absent();
@@ -44,7 +45,7 @@ public class Journey implements Parcelable {
     }
 
     public Journey(Parcel source) {
-        this.id = (Optional<String>) source.readSerializable();
+        this.id = source.readString();
         this.visibility = (Visibility) source.readSerializable();
         this.startTimeUtc = (Optional<Date>) source.readSerializable();
         this.stopTimeUtc = (Optional<Date>) source.readSerializable();

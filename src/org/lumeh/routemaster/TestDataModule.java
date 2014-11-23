@@ -22,7 +22,7 @@ public class TestDataModule {
         "-82.3421509}, {\"accuracyM\": 12.0, \"heightM\": 7.0, " +
         "\"journeyId\": 15, \"latitude\": 29.657919, \"timeUtc\": " +
         "\"2014-10-30T14:00:00.316000\", \"id\": 52, \"longitude\": " +
-        "-82.3422764}], \"accountId\": 1, \"stopTimeUtc\": " +
+        "-82.3422764}], \"accountId\": \"test\", \"stopTimeUtc\": " +
         "\"2014-10-30T14:00:00.316000\", \"startPlaceId\": null, \"id\": " +
         "15, \"stopPlaceId\": null}";
 
