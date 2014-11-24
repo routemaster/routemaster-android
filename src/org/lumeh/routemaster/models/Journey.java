@@ -55,6 +55,14 @@ public class Journey implements Parcelable {
         source.readTypedList(this.waypoints, Location.CREATOR);
     }
 
+    public double getDistanceM() {
+        return distanceM;
+    }
+
+    public int getEfficiency() {
+        return efficiency;
+    }
+
     public void addWaypoint(Location loc) {
         if (this.waypoints.isEmpty()) {
             this.setStartTimeUtc(new Date(loc.getTime()));
@@ -65,6 +73,13 @@ public class Journey implements Parcelable {
 
     public ImmutableList<Location> getWaypoints() {
         return ImmutableList.copyOf(this.waypoints);
+    }
+
+    public Optional<Location> getFirstWaypoint() {
+        if(waypoints.size() > 0) {
+            return Optional.of(waypoints.get(0));
+        }
+        return Optional.absent();
     }
 
     /**
@@ -81,8 +96,16 @@ public class Journey implements Parcelable {
         this.startTimeUtc = Optional.of(t);
     }
 
+    public Optional<Date> getStartTimeUtc() {
+        return startTimeUtc;
+    }
+
     public void setStopTimeUtc(Date t) {
         this.stopTimeUtc = Optional.of(t);
+    }
+
+    public Optional<Date> getStopTimeUtc() {
+        return stopTimeUtc;
     }
 
     @Override

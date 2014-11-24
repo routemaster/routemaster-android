@@ -17,27 +17,53 @@
                   android:clipChildren="false"
                   android:layout_width="match_parent"
                   android:layout_height="match_parent">
+
     <TextView android:id="@+id/startTime"
+              android:padding="3dp"
+              android:textStyle="bold"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"/>
+
     <ImageView android:id="@+id/map"
                android:layout_below="@id/startTime"
                android:layout_width="match_parent"
                android:layout_marginLeft="-7dp"
                android:layout_marginRight="-7dp"
+               android:layout_marginTop="6dp"
+               android:layout_marginBottom="6dp"
                android:layout_height="180dp"
                android:scaleType="centerCrop"
                android:cropToPadding="true"/>
-    <TextView android:id="@+id/distance"
-              android:layout_below="@id/map"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"/>
-    <TextView android:id="@+id/efficiency"
-              android:layout_below="@id/map"
-              android:layout_toRightOf="@id/distance"
-              android:layout_alignParentRight="true"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:gravity="right"/>
+
+    <LinearLayout android:padding="3dp"
+                  android:orientation="horizontal"
+                  android:layout_below="@id/map"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+      <TextView android:id="@+id/distanceLabel"
+                android:paddingRight="8sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/traveled_distance"/>
+      <TextView android:id="@+id/distance"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+      <!-- Fill the empty horizontal space to right-align the efficiency-->
+      <View android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+      <TextView android:id="@+id/efficiencyLabel"
+                android:paddingRight="8sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/efficiency"/>
+      <TextView android:id="@+id/efficiency"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
   </RelativeLayout>
 </android.support.v7.widget.CardView>

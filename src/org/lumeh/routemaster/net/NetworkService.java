@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import javax.inject.Inject;
 import org.lumeh.routemaster.RouteMasterService;
 import org.lumeh.routemaster.models.Journey;
@@ -63,6 +64,16 @@ public class NetworkService extends RouteMasterService {
     }
 
     @Subscribe
+    public void onEvent(RecentJourneysEvent.Get ev) {
+        api.getRecentJourneys(
+            ev.get(),
+            new ResponseEventCallback<List<Journey>>(
+                RecentJourneysEvent.Response.class, ev
+            )
+        );
+    }
+
+    @Subscribe
     public void onNetworkEvent(NetworkEvent.Post<?> ev) {
         criticalOutstandingCalls++;
         Log.d(TAG, "HTTP POST:\n" + gson.toJson(ev.get()));
@@ -70,7 +81,9 @@ public class NetworkService extends RouteMasterService {
 
     @Subscribe
     public void onNetworkEvent(NetworkEvent.Response ev) {
-        criticalOutstandingCalls--;
+        if(ev.getRequest() instanceof NetworkEvent.Post) {
+            criticalOutstandingCalls--;
+        }
         if(criticalOutstandingCalls < 0) {
             throw new RuntimeException("outstanding calls should not be < 0 !");
         } else if(criticalOutstandingCalls == 0) {

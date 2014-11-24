@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import com.google.android.gms.maps.model.LatLng;
 import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,8 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.inject.Inject;
 import org.lumeh.routemaster.R;
-import com.google.android.gms.maps.model.LatLng;
 import org.lumeh.routemaster.models.Journey;
+import org.lumeh.routemaster.util.Locations;
+import org.ocpsoft.prettytime.PrettyTime;
 
 public class HistoryCardAdapter
                      extends Adapter<HistoryCardAdapter.HistoryCardViewHolder> {
@@ -69,10 +71,14 @@ public class HistoryCardAdapter
 
     @Override
     public void onBindViewHolder(HistoryCardViewHolder holder, int position) {
-        holder.getStartTimeView().setText("st " + position);
-        holder.getDistanceView().setText("dist " + position);
-        holder.getEfficiencyView().setText("eff " + position);
-        holder.getLayout().post(new InjectMapRunnable(holder, journeys.get(0)));
+        Journey j = journeys.get(position);
+        holder.getStartTimeView().setText(
+            new PrettyTime().format(j.getStartTimeUtc().get())
+        );
+        holder.getDistanceView().setText(Math.round(j.getDistanceM()) +
+                                         " meters");
+        holder.getEfficiencyView().setText("" + j.getEfficiency());
+        holder.getLayout().post(new InjectMapRunnable(holder, j));
     }
 
     /**
@@ -127,8 +133,10 @@ public class HistoryCardAdapter
             Uri uri = new HistoryMapUriBuilder()
                 .scale(scale)
                 .path(journey)
-                .marker(START_STYLE, new LatLng(29.6574919, -82.3418686))
-                .marker(END_STYLE, new LatLng(29.6578225, -82.3421188))
+                .marker(START_STYLE,
+                        Locations.toLatLng(journey.getFirstWaypoint().get()))
+                .marker(END_STYLE,
+                        Locations.toLatLng(journey.getLastWaypoint().get()))
                 .size((int) Math.ceil(width), (int) Math.ceil(height))
                 .build();
 
