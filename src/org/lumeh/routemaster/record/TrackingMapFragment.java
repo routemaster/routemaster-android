@@ -19,7 +19,7 @@ import org.lumeh.routemaster.R;
 public class TrackingMapFragment extends SupportMapFragment {
     private static final String TAG = "RouteMaster";
     private static PolylineOptions ROUTE_OPTIONS = new PolylineOptions()
-        .color(R.color.primaryDark)
+        .color(0xc0000000)
         .width(7); // screen pixels
 
     private boolean isConfigured = false;

@@ -30,6 +30,9 @@ import org.ocpsoft.prettytime.PrettyTime;
 public class HistoryCardAdapter
                      extends Adapter<HistoryCardAdapter.HistoryCardViewHolder> {
     private static final String TAG = "RouteMaster";
+    private static final String PATH_STYLE = HistoryMapUriBuilder.style()
+        .put("color", "0x000000c0")
+        .build();
     private static final String START_STYLE = HistoryMapUriBuilder.style()
         .put("color", "green")
         .put("size", "med")
@@ -132,7 +135,7 @@ public class HistoryCardAdapter
 
             Uri uri = new HistoryMapUriBuilder()
                 .scale(scale)
-                .path(journey)
+                .path(PATH_STYLE, journey)
                 .marker(START_STYLE,
                         Locations.toLatLng(journey.getFirstWaypoint().get()))
                 .marker(END_STYLE,
