@@ -2,9 +2,13 @@
   http://www.google.com/design/spec/style/color.html#color-ui-color-palette
 -->
 <resources>
-  <item name="primary" type="color">#1e88e5</item>
-  <item name="primaryDark" type="color">#0d47a1</item>
-  <item name="actionBarForeground" type="color">#e3f2fd</item>
-  <item name="accent" type="color">#2979ff</item>
-  <item name="activityBackground" type="color">#b0bec5</item>
+  <color name="primary">#1e88e5</color>
+  <color name="primaryDark">#0d47a1</color>
+  <color name="actionBarForeground">#e3f2fd</color>
+  <color name="accent">#2979ff</color>
+  <color name="activityBackground">#b0bec5</color>
+  <color name="startButton">@color/md_green_500</color>
+  <color name="startButtonPressed">@color/md_green_700</color>
+  <color name="stopButton">@color/md_red_500</color>
+  <color name="stopButtonPressed">@color/md_red_700</color>
 </resources>
