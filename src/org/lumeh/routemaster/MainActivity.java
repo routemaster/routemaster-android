@@ -27,7 +27,10 @@ public class MainActivity extends RouteMasterActivity {
         super.onCreate(state);
 
         setContentView(R.layout.main);
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        if(findViewById(R.id.toolbar) != null) {
+            // we only have a toolbar in portrait mode
+            setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        }
         getSupportFragmentManager().executePendingTransactions();
 
         if(state == null) {

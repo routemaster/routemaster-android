@@ -4,15 +4,9 @@
               android:layout_height="match_parent"
               android:orientation="vertical"
               android:background="@color/activityBackground">
-  <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar"
-      app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-      android:background="@color/primary"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"/>
   <com.astuetz.PagerSlidingTabStrip
       android:layout_width="match_parent"
-      android:layout_height="48dp"
+      android:layout_height="40dp"
       android:id="@+id/main_tabs"
       android:background="@color/primary"
       android:textColor="@color/actionBarForeground"

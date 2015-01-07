@@ -1,5 +1,9 @@
 package org.lumeh.routemaster.record;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -14,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -36,7 +41,9 @@ public class RecordFragment extends RouteMasterFragment {
 
     private static final String TAG_MAP_FRAGMENT = "mapFragment";
 
-    private Button startStopButton;
+    private FloatingActionButton startButton;
+    private FloatingActionButton stopButton;
+    private View infobox;
     private TrackingConfig trackingConfig;
     private TrackingMapFragment mapFragment;
     private TrackingServiceConnection trackingServiceConnection =
@@ -73,9 +80,13 @@ public class RecordFragment extends RouteMasterFragment {
                 .commit();
         }
 
-        // grab the start/stop button for later. Functionality is attached
-        // in TrackingServiceConnection.onServiceConnected()
-        startStopButton = (Button) getView().findViewById(R.id.startstop);
+        // grab the start/stop buttons for later. Functionality is attached
+        // in TrackingServiceConnection.onServiceConnected() and is defined in
+        // onStartButtonClick/onStopButtonClick.
+        startButton =
+            (FloatingActionButton) getView().findViewById(R.id.startButton);
+        stopButton =
+            (FloatingActionButton) getView().findViewById(R.id.stopButton);
     }
 
     public void onStart() {
@@ -124,6 +135,54 @@ public class RecordFragment extends RouteMasterFragment {
         ));
     }
 
+    private static Animator getScaleAnimator(FloatingActionButton button,
+                                             float from, float to) {
+        button.setScaleX(from);
+        button.setScaleY(from);
+        ObjectAnimator x = ObjectAnimator.ofFloat(button, "scaleX", to);
+        ObjectAnimator y = ObjectAnimator.ofFloat(button, "scaleY", to);
+        AnimatorSet set = new AnimatorSet();
+        set.play(x).with(y);
+        set.setDuration(150);
+        return set;
+    }
+
+    protected void onStartButtonClick() {
+        trackingServiceConnection.getService().get().startTracking();
+        AnimatorSet anim = new AnimatorSet();
+        anim.play(getScaleAnimator(startButton, 1.f, 0.f))
+            .before(getScaleAnimator(stopButton, 0.f, 1.f));
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // we must set VISIBLE, in case the button is pressed rapidly,
+                // otherwise both buttons may disappear!
+                stopButton.setVisibility(View.VISIBLE);
+                startButton.setVisibility(View.INVISIBLE);
+            }
+        });
+        stopButton.setVisibility(View.VISIBLE);
+        anim.start();
+    }
+
+    protected void onStopButtonClick() {
+        trackingServiceConnection.getService().get().stopTracking();
+        AnimatorSet anim = new AnimatorSet();
+        anim.play(getScaleAnimator(stopButton, 1.f, 0.f))
+            .before(getScaleAnimator(startButton, 0.f, 1.f));
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                // we must set VISIBLE, in case the button is pressed rapidly,
+                // otherwise both buttons may disappear!
+                startButton.setVisibility(View.VISIBLE);
+                stopButton.setVisibility(View.INVISIBLE);
+            }
+        });
+        startButton.setVisibility(View.VISIBLE);
+        anim.start();
+    }
+
     protected class TrackingServiceConnection implements ServiceConnection {
         private Optional<TrackingService> service = Optional.absent();
 
@@ -134,21 +193,24 @@ public class RecordFragment extends RouteMasterFragment {
             );
             service.get().registerTrackingListener(trackingListener);
 
-            // Initialize the startstop button
-            startStopButton.setOnClickListener(new OnClickListener() {
+            // Initialize the start/stop buttons
+            startButton.setOnClickListener(new OnClickListener() {
+                @Override
                 public void onClick(View v) {
-                    if(service.get().getIsTracking()) {
-                        service.get().stopTracking();
-                        startStopButton.setText("Start");
-                    } else {
-                        service.get().startTracking();
-                        startStopButton.setText("Stop");
-                    }
+                    onStartButtonClick();
                 }
             });
-            startStopButton.setText(
-                service.get().getIsTracking() ? "Stop" : "Start"
-            );
+            stopButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onStopButtonClick();
+                }
+            });
+            if(service.get().getIsTracking()) {
+                stopButton.setVisibility(View.VISIBLE);
+            } else {
+                startButton.setVisibility(View.VISIBLE);
+            }
         }
 
         public Optional<TrackingService> getService() {
